@@ -1,0 +1,21 @@
+mode: set
+github.com/leandrobraga/primenumber/main.go:12.13,23.2 6 0
+github.com/leandrobraga/primenumber/main.go:26.54,29.6 2 1
+github.com/leandrobraga/primenumber/main.go:29.6,31.11 2 1
+github.com/leandrobraga/primenumber/main.go:31.11,34.4 2 1
+github.com/leandrobraga/primenumber/main.go:35.3,36.11 2 1
+github.com/leandrobraga/primenumber/main.go:40.58,42.44 2 1
+github.com/leandrobraga/primenumber/main.go:42.44,44.3 1 1
+github.com/leandrobraga/primenumber/main.go:46.2,47.16 2 1
+github.com/leandrobraga/primenumber/main.go:47.16,49.3 1 1
+github.com/leandrobraga/primenumber/main.go:51.2,53.19 2 1
+github.com/leandrobraga/primenumber/main.go:56.14,62.2 4 1
+github.com/leandrobraga/primenumber/main.go:64.15,66.2 1 1
+github.com/leandrobraga/primenumber/main.go:68.36,70.22 1 1
+github.com/leandrobraga/primenumber/main.go:70.22,72.3 1 1
+github.com/leandrobraga/primenumber/main.go:75.2,75.11 1 1
+github.com/leandrobraga/primenumber/main.go:75.11,77.3 1 1
+github.com/leandrobraga/primenumber/main.go:80.2,80.28 1 1
+github.com/leandrobraga/primenumber/main.go:80.28,81.15 1 1
+github.com/leandrobraga/primenumber/main.go:81.15,83.4 1 1
+github.com/leandrobraga/primenumber/main.go:86.2,86.55 1 1
