@@ -5,4 +5,4 @@ https://www.udemy.com/course/introduction-to-testing-in-go-golang/
 
 ## Description
 
-This project is a web api wich check whether a number is a prime number or not.
+This project check whether number is a prime number or not.
