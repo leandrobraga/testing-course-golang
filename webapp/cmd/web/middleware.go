@@ -39,7 +39,6 @@ func getIP(r *http.Request) (string, error) {
 	if err != nil {
 		return "unknow", err
 	}
-
 	// parse to check userIP is really a valid ip
 	if net.ParseIP(ip) == nil {
 		return "", fmt.Errorf("userip: %q is not IP:port", r.RemoteAddr)

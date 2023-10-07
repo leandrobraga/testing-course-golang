@@ -13,7 +13,7 @@ func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 type TemplateData struct {
-	Ip   string
+	IP   string
 	Data map[string]any
 }
 
@@ -23,7 +23,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, t string,
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return err
 	}
-
+	data.IP = app.ipFromContext(r.Context())
 	err = parsedFiles.Execute(w, data)
 	if err != nil {
 		return err
