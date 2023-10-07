@@ -9,7 +9,7 @@ import (
 
 type contextKey string
 
-var contextUserKey contextKey = "user_ip"
+const contextUserKey contextKey = "user_ip"
 
 func (app *application) ipFromContext(ctx context.Context) string {
 	return ctx.Value(contextUserKey).(string)
@@ -44,7 +44,7 @@ func getIP(r *http.Request) (string, error) {
 		return "", fmt.Errorf("userip: %q is not IP:port", r.RemoteAddr)
 	}
 
-	forward := r.Header.Get("X-Forwrded-For")
+	forward := r.Header.Get("X-Forwarded-For")
 	if len(forward) > 0 {
 		ip = forward
 	}
