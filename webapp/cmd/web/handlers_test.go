@@ -25,8 +25,6 @@ func Test_application_handlers(t *testing.T) {
 	ts := httptest.NewTLSServer(routes)
 	defer ts.Close()
 
-	pathToTemplates = "./../../templates/"
-
 	for _, e := range theTest {
 		resp, err := ts.Client().Get(ts.URL + e.url)
 		if err != nil {
@@ -42,26 +40,57 @@ func Test_application_handlers(t *testing.T) {
 }
 
 func TestAppHome(t *testing.T) {
-	// create a request
+	var tests = []struct {
+		name            string
+		putInSession    string
+		expectedSession string
+	}{
+		{"first visit", "", "<small>From Session:"},
+		{"sec visit", "hello, world!", "<small>From Session: hello, world!"},
+	}
+
+	for _, e := range tests {
+		// create a request
+		req, _ := http.NewRequest("GET", "/", nil)
+
+		req = addContextAndSessionToRequest(req, app)
+		_ = app.Session.Destroy(req.Context())
+
+		if e.putInSession != "" {
+			app.Session.Put(req.Context(), "test", e.putInSession)
+		}
+
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(app.Home)
+
+		handler.ServeHTTP(rr, req)
+
+		// check status code
+		if rr.Code != http.StatusOK {
+			t.Errorf("TestAppHome returned wrong status code; expected 200 but got %d", rr.Code)
+		}
+
+		body, _ := io.ReadAll(rr.Body)
+		if !strings.Contains(string(body), e.expectedSession) {
+			t.Errorf("%s: did not find %s in response body", e.name, e.expectedSession)
+		}
+	}
+}
+
+func TestApp_renderWithbadTemplate(t *testing.T) {
+	// set templatepath to a location with bad template
+	pathToTemplates = "./testdata/"
+
 	req, _ := http.NewRequest("GET", "/", nil)
-
 	req = addContextAndSessionToRequest(req, app)
-
 	rr := httptest.NewRecorder()
 
-	handler := http.HandlerFunc(app.Home)
-
-	handler.ServeHTTP(rr, req)
-
-	// check status code
-	if rr.Code != http.StatusOK {
-		t.Errorf("TestAppHome returned wrong status code; expected 200 but got %d", rr.Code)
+	err := app.render(rr, req, "bad.page.gohtml", &TemplateData{})
+	if err == nil {
+		t.Errorf("expected error from bad tempalte, but did not get one")
 	}
 
-	body, _ := io.ReadAll(rr.Body)
-	if !strings.Contains(string(body), `<small>From Session:`) {
-		t.Errorf("did not find correct text in html")
-	}
 }
 
 func getCtx(req *http.Request) context.Context {
