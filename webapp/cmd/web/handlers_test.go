@@ -91,6 +91,9 @@ func TestApp_renderWithbadTemplate(t *testing.T) {
 		t.Errorf("expected error from bad tempalte, but did not get one")
 	}
 
+	// Reset to original value for the other test dont have problem
+	pathToTemplates = "./../../templates/"
+
 }
 
 func getCtx(req *http.Request) context.Context {

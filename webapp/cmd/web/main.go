@@ -1,18 +1,18 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/leandrobraga/testing-course-golang/webapp/pkg/db"
 )
 
 type application struct {
 	Session *scs.SessionManager
 	DSN     string
-	DB      *sql.DB
+	DB      db.PostgresConn
 }
 
 func main() {
@@ -26,9 +26,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
 	app.Session = getSession()
-	app.DB = conn
+	app.DB = db.PostgresConn{DB: conn}
 
 	mux := app.routes()
 
