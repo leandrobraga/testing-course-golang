@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/gob"
 	"flag"
 	"log"
 	"net/http"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/leandrobraga/testing-course-golang/webapp/pkg/data"
 	"github.com/leandrobraga/testing-course-golang/webapp/pkg/db"
 )
 
@@ -16,7 +18,7 @@ type application struct {
 }
 
 func main() {
-
+	gob.Register(data.User{})
 	app := application{}
 
 	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=users sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection")
