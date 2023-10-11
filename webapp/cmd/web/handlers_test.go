@@ -91,7 +91,7 @@ func TestApp_renderWithbadTemplate(t *testing.T) {
 		t.Errorf("expected error from bad tempalte, but did not get one")
 	}
 
-	// Reset to original value for the other test dont have problem
+	// Reset to original value that the other tests don't have problem
 	pathToTemplates = "./../../templates/"
 
 }
