@@ -8,13 +8,15 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/leandrobraga/testing-course-golang/webapp/pkg/data"
-	"github.com/leandrobraga/testing-course-golang/webapp/pkg/db"
+	"github.com/leandrobraga/testing-course-golang/webapp/pkg/repository/dbrepo"
+
+	"github.com/leandrobraga/testing-course-golang/webapp/pkg/repository"
 )
 
 type application struct {
 	Session *scs.SessionManager
 	DSN     string
-	DB      db.PostgresConn
+	DB      repository.DatabaseRepo
 }
 
 func main() {
@@ -31,7 +33,7 @@ func main() {
 	defer conn.Close()
 
 	app.Session = getSession()
-	app.DB = db.PostgresConn{DB: conn}
+	app.DB = &dbrepo.PostgresDBRepo{DB: conn}
 
 	mux := app.routes()
 
