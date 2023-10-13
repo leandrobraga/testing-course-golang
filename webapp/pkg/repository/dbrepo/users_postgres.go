@@ -1,4 +1,4 @@
-package db
+package dbrepo
 
 import (
 	"context"
@@ -12,12 +12,16 @@ import (
 
 const dbTimeout = time.Second * 3
 
-type PostgresConn struct {
+type PostgresDBRepo struct {
 	DB *sql.DB
 }
 
+func (m *PostgresDBRepo) Connection() *sql.DB {
+	return m.DB
+}
+
 // AllUsers returns all users as a slice of *data.User
-func (m *PostgresConn) AllUsers() ([]*data.User, error) {
+func (m *PostgresDBRepo) AllUsers() ([]*data.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -56,7 +60,7 @@ func (m *PostgresConn) AllUsers() ([]*data.User, error) {
 }
 
 // GetUser returns one user by id
-func (m *PostgresConn) GetUser(id int) (*data.User, error) {
+func (m *PostgresDBRepo) GetUser(id int) (*data.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -90,7 +94,7 @@ func (m *PostgresConn) GetUser(id int) (*data.User, error) {
 }
 
 // GetUserByEmail returns one user by email address
-func (m *PostgresConn) GetUserByEmail(email string) (*data.User, error) {
+func (m *PostgresDBRepo) GetUserByEmail(email string) (*data.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -124,7 +128,7 @@ func (m *PostgresConn) GetUserByEmail(email string) (*data.User, error) {
 }
 
 // UpdateUser updates one user in the database
-func (m *PostgresConn) UpdateUser(u data.User) error {
+func (m *PostgresDBRepo) UpdateUser(u data.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -154,7 +158,7 @@ func (m *PostgresConn) UpdateUser(u data.User) error {
 }
 
 // DeleteUser deletes one user from the database, by id
-func (m *PostgresConn) DeleteUser(id int) error {
+func (m *PostgresDBRepo) DeleteUser(id int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -169,7 +173,7 @@ func (m *PostgresConn) DeleteUser(id int) error {
 }
 
 // InsertUser inserts a new user into the database, and returns the ID of the newly inserted row
-func (m *PostgresConn) InsertUser(user data.User) (int, error) {
+func (m *PostgresDBRepo) InsertUser(user data.User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -200,7 +204,7 @@ func (m *PostgresConn) InsertUser(user data.User) (int, error) {
 }
 
 // ResetPassword is the method we will use to change a user's password.
-func (m *PostgresConn) ResetPassword(id int, password string) error {
+func (m *PostgresDBRepo) ResetPassword(id int, password string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -219,7 +223,7 @@ func (m *PostgresConn) ResetPassword(id int, password string) error {
 }
 
 // InsertUserImage inserts a user profile image into the database.
-func (m *PostgresConn) InsertUserImage(i data.UserImage) (int, error) {
+func (m *PostgresDBRepo) InsertUserImage(i data.UserImage) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
