@@ -66,11 +66,13 @@ func (m *PostgresDBRepo) GetUser(id int) (*data.User, error) {
 
 	query := `
 		select 
-			id, email, first_name, last_name, password, is_admin, created_at, updated_at 
+			u.id, u.email, u.first_name, u.last_name, u.password, u.is_admin, u.created_at, u.updated_at,
+			coalesce(ui.file_name, '')
 		from 
-			users 
+			users u
+			left join user_images ui ON u.id = ui.user_id
 		where 
-		    id = $1`
+		    u.id = $1`
 
 	var user data.User
 	row := m.DB.QueryRowContext(ctx, query, id)
@@ -84,6 +86,7 @@ func (m *PostgresDBRepo) GetUser(id int) (*data.User, error) {
 		&user.IsAdmin,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.ProfilePic.FileName,
 	)
 
 	if err != nil {
@@ -100,11 +103,17 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*data.User, error) {
 
 	query := `
 		select 
-			id, email, first_name, last_name, password, is_admin, created_at, updated_at 
+			u.id, u.email, u.first_name, u.last_name, u.password, u.is_admin, u.created_at, u.updated_at,
+			coalesce(ui.file_name, '')
+
 		from 
-			users 
+			users u
+		left join
+			user_images ui
+		ON
+			u.id = ui.user_id
 		where 
-		    email = $1`
+		    u.email = $1`
 
 	var user data.User
 	row := m.DB.QueryRowContext(ctx, query, email)
@@ -118,6 +127,7 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*data.User, error) {
 		&user.IsAdmin,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.ProfilePic.FileName,
 	)
 
 	if err != nil {
@@ -177,13 +187,20 @@ func (m *PostgresDBRepo) InsertUser(user data.User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
+	stmt := `delete from user_images where user_id = $1`
+
+	_, err := m.DB.Exec(stmt, user.ID)
+	if err != nil {
+		return 0, err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 	if err != nil {
 		return 0, err
 	}
 
 	var newID int
-	stmt := `insert into users (email, first_name, last_name, password, is_admin, created_at, updated_at)
+	stmt = `insert into users (email, first_name, last_name, password, is_admin, created_at, updated_at)
 		values ($1, $2, $3, $4, $5, $6, $7) returning id`
 
 	err = m.DB.QueryRowContext(ctx, stmt,
