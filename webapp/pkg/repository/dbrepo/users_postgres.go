@@ -187,20 +187,13 @@ func (m *PostgresDBRepo) InsertUser(user data.User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	stmt := `delete from user_images where user_id = $1`
-
-	_, err := m.DB.Exec(stmt, user.ID)
-	if err != nil {
-		return 0, err
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 	if err != nil {
 		return 0, err
 	}
 
 	var newID int
-	stmt = `insert into users (email, first_name, last_name, password, is_admin, created_at, updated_at)
+	stmt := `insert into users (email, first_name, last_name, password, is_admin, created_at, updated_at)
 		values ($1, $2, $3, $4, $5, $6, $7) returning id`
 
 	err = m.DB.QueryRowContext(ctx, stmt,
@@ -244,11 +237,18 @@ func (m *PostgresDBRepo) InsertUserImage(i data.UserImage) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
+	stmt := `delete from user_images where user_id = $1`
+
+	_, err := m.DB.ExecContext(ctx, stmt, i.UserID)
+	if err != nil {
+		return 0, err
+	}
+
 	var newID int
-	stmt := `insert into user_images (user_id, file_name, created_at, updated_at)
+	stmt = `insert into user_images (user_id, file_name, created_at, updated_at)
 		values ($1, $2, $3, $4) returning id`
 
-	err := m.DB.QueryRowContext(ctx, stmt,
+	err = m.DB.QueryRowContext(ctx, stmt,
 		i.UserID,
 		i.FileName,
 		time.Now(),
