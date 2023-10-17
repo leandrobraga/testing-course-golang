@@ -15,6 +15,16 @@ func (app *application) routes() http.Handler {
 	mux.Post("/auth", app.authenticate)
 	mux.Post("/refresh-token", app.refresh)
 
+	mux.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		var payload = struct {
+			Message string `json:"message"`
+		}{
+			Message: "hello world!",
+		}
+
+		_ = app.writeJSON(w, http.StatusOK, payload)
+	})
+
 	mux.Route("/users", func(mux chi.Router) {
 		mux.Get("/", app.allUsers)
 		mux.Get("/{userID}", app.getUser)
