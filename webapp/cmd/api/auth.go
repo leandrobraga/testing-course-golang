@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/leandrobraga/testing-course-golang/webapp/pkg/data"
 )
 
 const jwtTokenExpiry = time.Minute * 15
@@ -23,7 +24,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (app *application) getTokenFromHeaderandVerify(w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
+func (app *application) getTokenFromHeaderAndVerify(w http.ResponseWriter, r *http.Request) (string, *Claims, error) {
 	// we expected our authorization header to look like this:
 	// Bearer <token>
 
@@ -79,4 +80,51 @@ func (app *application) getTokenFromHeaderandVerify(w http.ResponseWriter, r *ht
 
 	// valid token
 	return token, claims, nil
+}
+
+func (app *application) generateTokenPair(user *data.User) (TokenPairs, error) {
+	// create the token
+	token := jwt.New(jwt.SigningMethodES256)
+
+	// set claim
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	claims["sub"] = fmt.Sprint(user.ID)
+	claims["aud"] = app.Domain
+	claims["iss"] = app.Domain
+	if user.IsAdmin == 1 {
+		claims["admin"] = true
+	} else {
+		claims["admin"] = false
+	}
+
+	// set the expire
+	claims["exp"] = time.Now().Add(jwtTokenExpiry).Unix()
+
+	// create the signed token
+	signedAcessToken, err := token.SignedString([]byte(app.JWTSecret))
+	if err != nil {
+		return TokenPairs{}, err
+	}
+
+	// create the refresh token
+	refreshToken := jwt.New(jwt.SigningMethodES256)
+	refreshTokenClaims := refreshToken.Claims.(jwt.MapClaims)
+	refreshTokenClaims["sub"] = fmt.Sprint(user.ID)
+	// set expiry; must be longer than jwt expiry
+	refreshTokenClaims["exp"] = time.Now().Add(refreshTokenExpire).Unix()
+
+	// create signed refersh token
+	signedRefreshToken, err := token.SignedString([]byte(app.JWTSecret))
+	if err != nil {
+		return TokenPairs{}, err
+	}
+
+	var tokenPairs = TokenPairs{
+		Token:        signedAcessToken,
+		RefreshToken: signedRefreshToken,
+	}
+
+	return tokenPairs, nil
+
 }
