@@ -84,7 +84,7 @@ func (app *application) getTokenFromHeaderAndVerify(w http.ResponseWriter, r *ht
 
 func (app *application) generateTokenPair(user *data.User) (TokenPairs, error) {
 	// create the token
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 
 	// set claim
 	claims := token.Claims.(jwt.MapClaims)
