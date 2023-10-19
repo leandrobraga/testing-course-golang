@@ -35,12 +35,12 @@ func (app *application) getTokenFromHeaderAndVerify(w http.ResponseWriter, r *ht
 	authHeader := r.Header.Get("Authorization")
 
 	// sanity check
-	if authHeader != "" {
+	if authHeader == "" {
 		return "", nil, errors.New("no auth header")
 	}
 
 	// split the header	on spaces
-	headerParts := strings.Split(authHeader, "")
+	headerParts := strings.Split(authHeader, " ")
 	if len(headerParts) != 2 {
 		return "", nil, errors.New("invalid auth header")
 	}
@@ -67,7 +67,7 @@ func (app *application) getTokenFromHeaderAndVerify(w http.ResponseWriter, r *ht
 
 	// check for an error; note that this catches expired tokens as well.
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "token is expired by") {
+		if strings.Contains(err.Error(), "token is expired") {
 			return "", nil, errors.New("expired token")
 		}
 		return "", nil, err
