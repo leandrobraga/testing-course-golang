@@ -105,7 +105,6 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*data.User, error) {
 		select 
 			u.id, u.email, u.first_name, u.last_name, u.password, u.is_admin, u.created_at, u.updated_at,
 			coalesce(ui.file_name, '')
-
 		from 
 			users u
 		left join
