@@ -13,18 +13,16 @@ func (app *application) routes() http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(app.enableCORS)
 
+	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./html/"))))
+
+	mux.Route("/web", func(mux chi.Router) {
+		mux.Post("/auth", app.authenticate)
+		mux.Get("/refresh-token", app.refreshUsingCookie)
+		mux.Get("/logout", app.deleteRefreshCookie)
+	})
+
 	mux.Post("/auth", app.authenticate)
 	mux.Post("/refresh-token", app.refresh)
-
-	mux.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		var payload = struct {
-			Message string `json:"message"`
-		}{
-			Message: "hello world!",
-		}
-
-		_ = app.writeJSON(w, http.StatusOK, payload)
-	})
 
 	mux.Route("/users", func(mux chi.Router) {
 		mux.Use(app.authRequired)

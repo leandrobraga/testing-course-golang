@@ -105,10 +105,13 @@ func Test_app_userHandlers(t *testing.T) {
 		handler        http.HandlerFunc
 		expectedStatus int
 	}{
+
 		{"allUsers", "GET", "", "", app.allUsers, http.StatusOK},
 		{"deleteUser", "DELETE", "", "1", app.deleteUser, http.StatusNoContent},
+		{"deleteUser bad URL param", "DELETE", "", "Y", app.deleteUser, http.StatusBadRequest},
 		{"getUser valid", "GET", "", "1", app.getUser, http.StatusOK},
 		{"getUser invalid", "GET", "", "100", app.getUser, http.StatusBadRequest},
+		{"getUser bad URL param", "GET", "", "Y", app.getUser, http.StatusBadRequest},
 		{
 			"updateUser valid",
 			"PATCH",
@@ -180,5 +183,91 @@ func Test_app_userHandlers(t *testing.T) {
 		if rr.Code != e.expectedStatus {
 			t.Errorf("%s: wrong status returned; expected %d but got %d", e.name, e.expectedStatus, rr.Code)
 		}
+	}
+}
+
+func Test_app_refreshUsingCookie(t *testing.T) {
+	testUser := data.User{
+		ID:        1,
+		FirstName: "Admin",
+		LastName:  "User",
+		Email:     "admin@example.com",
+	}
+
+	tokens, _ := app.generateTokenPair(&testUser)
+
+	testCookie := &http.Cookie{
+		Name:     "refresh_token",
+		Path:     "/",
+		Value:    tokens.RefreshToken,
+		Expires:  time.Now().Add((refreshTokenExpiry)),
+		MaxAge:   int(refreshTokenExpiry.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Domain:   "localhost",
+		HttpOnly: true,
+		Secure:   true,
+	}
+
+	badCookie := &http.Cookie{
+		Name:     "refresh_token",
+		Path:     "/",
+		Value:    "somebadstring",
+		Expires:  time.Now().Add((refreshTokenExpiry)),
+		MaxAge:   int(refreshTokenExpiry.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Domain:   "localhost",
+		HttpOnly: true,
+		Secure:   true,
+	}
+
+	var tests = []struct {
+		name           string
+		addCookie      bool
+		cookie         *http.Cookie
+		expectedStatus int
+	}{
+		{"valid cookie", true, testCookie, http.StatusOK},
+		{"invalid cookie", true, badCookie, http.StatusBadRequest},
+	}
+
+	for _, e := range tests {
+		rr := httptest.NewRecorder()
+
+		req, _ := http.NewRequest("GET", "/", nil)
+		if e.addCookie {
+			req.AddCookie(e.cookie)
+		}
+
+		handler := http.HandlerFunc(app.refreshUsingCookie)
+		handler.ServeHTTP(rr, req)
+
+		if rr.Code != e.expectedStatus {
+			t.Errorf("%s: wrong status code returned; expected %d but got %d", e.name, e.expectedStatus, rr.Code)
+		}
+	}
+}
+
+func Test_app_deleteRefreshCookie(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/logout", nil)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.deleteRefreshCookie)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusAccepted {
+		t.Errorf("wrong status; expected %d but got %d", http.StatusAccepted, rr.Code)
+	}
+
+	foundCookie := false
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "refresh_token" {
+			foundCookie = true
+			if c.Expires.After(time.Now()) {
+				t.Errorf("cookie expiration in future, and should not be: %v", c.Expires.UTC())
+			}
+		}
+	}
+
+	if !foundCookie {
+		t.Error("refresh_token cookie not found")
 	}
 }
