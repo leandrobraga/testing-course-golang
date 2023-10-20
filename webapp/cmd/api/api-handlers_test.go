@@ -50,8 +50,8 @@ func Test_app_refresh(t *testing.T) {
 		resetRefreshTime   bool
 	}{
 		{"valid", "", http.StatusOK, true},
-		// {"valid but not yet ready to expire", "", http.StatusTooEarly, false},
-		// {"expired token", expiredToken, http.StatusBadRequest, false},
+		{"valid but not yet ready to expire", "", http.StatusTooEarly, false},
+		{"expired token", expiredToken, http.StatusBadRequest, false},
 	}
 
 	testUser := data.User{
