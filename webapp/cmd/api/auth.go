@@ -11,8 +11,8 @@ import (
 	"github.com/leandrobraga/testing-course-golang/webapp/pkg/data"
 )
 
-const jwtTokenExpiry = time.Minute * 15
-const refreshTokenExpire = time.Hour * 24
+var jwtTokenExpiry = time.Minute * 15
+var refreshTokenExpiry = time.Hour * 24
 
 type TokenPairs struct {
 	Token        string `json:"access_token"`
@@ -108,14 +108,14 @@ func (app *application) generateTokenPair(user *data.User) (TokenPairs, error) {
 	}
 
 	// create the refresh token
-	refreshToken := jwt.New(jwt.SigningMethodES256)
+	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	refreshTokenClaims := refreshToken.Claims.(jwt.MapClaims)
 	refreshTokenClaims["sub"] = fmt.Sprint(user.ID)
 	// set expiry; must be longer than jwt expiry
-	refreshTokenClaims["exp"] = time.Now().Add(refreshTokenExpire).Unix()
+	refreshTokenClaims["exp"] = time.Now().Add(refreshTokenExpiry).Unix()
 
 	// create signed refersh token
-	signedRefreshToken, err := token.SignedString([]byte(app.JWTSecret))
+	signedRefreshToken, err := refreshToken.SignedString([]byte(app.JWTSecret))
 	if err != nil {
 		return TokenPairs{}, err
 	}
